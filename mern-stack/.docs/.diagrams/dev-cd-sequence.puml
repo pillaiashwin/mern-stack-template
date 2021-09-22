@@ -1,0 +1,49 @@
+@startuml dev-cd-sequence
+
+title CD Flow
+
+skinparam style strictuml
+
+actor           "Developer"     as dev
+participant     "GitHub"        as github
+participant     "NPM Registry"  as npm
+box "AWS"
+participant     "STS"           as sts
+participant     "ECR"           as ecr
+participant     "EKS"           as eks
+end box
+
+== build job ==
+
+dev -> github       : merge PR into main branch
+github -> github    : checkout
+github -> npm       : fetch dependencies
+npm --> github      : ok
+github -> github    : build
+github -> github    : test
+
+== deploy job ==
+
+github -> github    : checkout
+github -> github    : setup AWS credentials
+github -> sts       : login
+sts --> github      : session token
+
+group Push Docker image to ECR
+github -> ecr       : login
+ecr --> github      : ECR registry
+github -> github    : build image
+github -> github    : tag image with build number and latest
+github -> ecr       : push image
+ecr --> github      : ok
+end
+
+group Deploy to EKS
+github -> github    : setup k8s context (~/.kube/config)
+github -> github    : kustomize - add K8S build-related annotations
+github -> github    : kustomize - set deployment image tag
+github -> github    : kustomize - build K8S specs
+github -> eks       : apply K8S specs
+end
+
+@enduml

@@ -1,0 +1,66 @@
+# template from config/samples/mongodb.com_v1_mongodbcommunity_cr.yaml
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec:
+  type: ReplicaSet
+  # scale replicas
+  members: 1
+  # MongoDB version
+  version: "5.0.2"
+  security:
+    authentication:
+      modes: ["SCRAM"]
+  users:
+    - name: admin
+      db: admin      
+      # a reference to the secret that will be used to generate the user's password
+      passwordSecretRef:
+        name: mongo-secret
+        key: admin-pass
+      roles:
+        - name: clusterAdmin
+          db: admin
+        - name: userAdminAnyDatabase
+          db: admin
+      scramCredentialsSecretName: mongo-admin-scram
+    - name: appuser
+      db: admin
+      passwordSecretRef:
+        name: mongo-secret
+        key: appuser-pass
+      roles:
+        - name: readWrite
+          db: gateway-service
+        - name: readWrite
+          db: user-service
+        - name: readWrite
+          db: survey-service
+      scramCredentialsSecretName: mongo-appuser-scram
+  statefulSet:
+    spec:
+      # Specifies a size for the data volume different from the default 10Gi
+      volumeClaimTemplates:
+        - metadata:
+            name: data-volume
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            storageClassName: ebs-sc
+            resources:
+              requests:
+                storage: 3Gi
+        - metadata:
+            name: logs-volume
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            storageClassName: ebs-sc
+            resources:
+              requests:
+                storage: 1Gi
+  additionalMongodConfig:
+    storage.wiredTiger.engineConfig.journalCompressor: zlib

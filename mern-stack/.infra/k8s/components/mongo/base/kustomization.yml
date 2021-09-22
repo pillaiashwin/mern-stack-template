@@ -1,0 +1,6 @@
+bases:
+  - ./operator
+
+resources:
+  - storage-class.yml
+  - replica-set.yml

@@ -1,0 +1,131 @@
+name: DEV-CD
+
+on:
+  push:
+    branches: [main]
+
+env:
+  # overlay
+  KUSTOMIZE_OVERLAY: dev
+  # image
+  ECR_REPOSITORY: jumpstart
+  IMAGE_NAME: novus
+  # aws
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: ea-devops-eks
+  # build info
+  BUILD_NUMBER: ${{ github.run_number }}
+  BUILD_WORKFLOW: ${{ github.workflow}}
+  GIT_REPOSITORY: ${{ github.repository }}
+  GIT_REF: ${{ github.ref }}
+  GIT_COMMIT_SHA: ${{ github.sha }}
+  
+jobs:
+  build:
+    name: 'build'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        locations: [
+          { "name": "gateway-service", "pwd": "./mern-stack/gateway-service" },
+          { "name": "user-service", "pwd": "./mern-stack/user-service" },
+          { "name": "survey-service", "pwd": "./mern-stack/survey-service" },
+          { "name": "react-app", "pwd": "./mern-stack/react-app" }
+        ]
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: install nodejs
+        uses: actions/setup-node@v2
+
+      - name: ${{ matrix.locations.name }} - install nodejs dependencies
+        working-directory: ${{ matrix.locations.pwd }}
+        run: npm install
+
+      - name: ${{ matrix.locations.name }} - build
+        working-directory: ${{ matrix.locations.pwd }}
+        run: npm run build --if-present
+
+      - name: ${{ matrix.locations.name }} - test
+        working-directory: ${{ matrix.locations.pwd }}
+        run: npm test
+
+  deploy:
+    name: 'deploy'
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: AWS - configure credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: ECR - login
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: ECR - set login env
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          FULL_IMAGE_NAME: ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}/${{ env.IMAGE_NAME }}
+        run: |
+          # make env available to other steps
+          echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
+          echo "FULL_IMAGE_NAME=$FULL_IMAGE_NAME" >> $GITHUB_ENV
+
+      - name: ECR - build, tag & push image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./mern-stack
+          file: ./mern-stack/Dockerfile
+          push: true
+          cache-from: type=registry,ref=${{ env.FULL_IMAGE_NAME }}:latest
+          cache-to: type=inline
+          tags: |
+            ${{ env.FULL_IMAGE_NAME }}:${{ env.BUILD_NUMBER }}
+            ${{ env.FULL_IMAGE_NAME }}:latest
+
+      - name: EKS - setup ~/.kube/config
+        run: |
+          aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER_NAME
+
+      - name: EKS - kustomize specs
+        working-directory: ./mern-stack/.infra/k8s/overlays/${{ env.KUSTOMIZE_OVERLAY }}
+        run: |
+          echo "Setting build annotations."
+
+          kustomize edit add annotation \
+            massmutual.com/build-number:$BUILD_NUMBER \
+            massmutual.com/build-workflow:$BUILD_WORKFLOW \
+            massmutual.com/git-repository:$GIT_REPOSITORY \
+            massmutual.com/git-ref:$GIT_REF \
+            massmutual.com/git-commit-sha:$GIT_COMMIT_SHA \
+            massmutual.com/kustomize-overlay:$KUSTOMIZE_OVERLAY
+
+          echo "Setting specific image."
+
+          kustomize edit set image \
+            mern-services-image=$FULL_IMAGE_NAME:$BUILD_NUMBER
+
+      - name: EKS - deploy
+        working-directory: ./mern-stack/.infra/k8s
+        env:
+          # EKS MongoDB
+          MONGO_ADMIN_PASS: ${{ secrets.MONGO_ADMIN_PASS }}
+          MONGO_APPUSER_PASS: ${{ secrets.MONGO_APPUSER_PASS }}
+          # services connection strings 
+          GATEWAY_SERVICE_DB_CONN_STR: ${{ secrets.GATEWAY_SERVICE_DB_CONN_STR }}
+          USER_SERVICE_DB_CONN_STR: ${{ secrets.USER_SERVICE_DB_CONN_STR }}
+          SURVEY_SERVICE_DB_CONN_STR: ${{ secrets.SURVEY_SERVICE_DB_CONN_STR }}
+        run: |
+          chmod u+x ./deploy.sh
+          ./deploy.sh $KUSTOMIZE_OVERLAY

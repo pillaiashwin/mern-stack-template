@@ -1,0 +1,14 @@
+{
+  "SurveysBackendCdkStack": {
+    "awsuserpoolsid": "us-east-1_t3cOgnJve",
+    "CdkSurveysApiEndpoint9955546B": "https://j479u2hrp4.execute-api.us-east-1.amazonaws.com/prod/",
+    "apiname": "surveysrestapi",
+    "awsprojectregion": "us-east-1",
+    "apiregion": "us-east-1",
+    "awscognitoregion": "us-east-1",
+    "awsuserpoolswebclientid": "3skg3kecmar5l0gb9ts77a23bb",
+    "awscognitoidentitypoolid": "us-east-1:a8acde21-eab7-4cc6-bb1c-e77260681c28",
+    "oauth": "{}",
+    "apiendpoint": "https://j479u2hrp4.execute-api.us-east-1.amazonaws.com/prod/"
+  }
+}

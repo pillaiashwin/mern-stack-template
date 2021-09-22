@@ -1,0 +1,17 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mern-services-react
+  annotations:
+    alb.ingress.kubernetes.io/subnets: subnet-06b2f36d34d0e3091, subnet-05dd0b6eab6b1e5f8, subnet-09e785c458395ab83
+    external-dns.alpha.kubernetes.io/hostname: dev.mern.jumpstart.hackathon.nsawssnd.massmutual.com
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mern-services-gateway
+  annotations:
+    alb.ingress.kubernetes.io/subnets: subnet-06b2f36d34d0e3091, subnet-05dd0b6eab6b1e5f8, subnet-09e785c458395ab83
+    external-dns.alpha.kubernetes.io/hostname: dev.gateway.mern.jumpstart.hackathon.nsawssnd.massmutual.com

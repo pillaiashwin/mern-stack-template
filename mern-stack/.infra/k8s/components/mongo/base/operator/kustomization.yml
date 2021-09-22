@@ -1,0 +1,6 @@
+bases:
+  - ./config/rbac
+
+resources:
+  - ./config/crd/bases/mongodbcommunity.mongodb.com_mongodbcommunity.yaml
+  - ./config/manager/manager.yaml

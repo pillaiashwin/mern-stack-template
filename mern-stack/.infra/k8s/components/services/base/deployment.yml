@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mern-services
+spec:
+  replicas: 1
+  # for each rollout a new replicaSet will be created, replicas will get incremented on the new set and decremented gradually on the old set, therefore this says how many replicaSets to keep for historical purposes
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: mern-services
+  template:
+    metadata:
+      labels:
+        app: mern-services
+    spec:
+      containers:
+      - name: mern-services
+        image: mern-services-image
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+        env:
+          - name: GATEWAY_SERVICE_DB_CONN_STR
+            valueFrom:
+              secretKeyRef:
+                name: gateway-service-secret
+                key: db-conn-str
+          - name: USER_SERVICE_DB_CONN_STR
+            valueFrom:
+              secretKeyRef:
+                name: user-service-secret
+                key: db-conn-str
+          - name: SURVEY_SERVICE_DB_CONN_STR
+            valueFrom:
+              secretKeyRef:
+                name: survey-service-secret
+                key: db-conn-str
+          - name: CORS_ORIGINS
+            value: updated_by_kustomize
+          - name: REACT_APP_GATEWAY_SERVICE_URL
+            value: updated_by_kustomize
+          - name: GATEWAY_SERVICE_URL
+            value: http://mern-services:8080
+          - name: USER_SERVICE_URL
+            value: http://mern-services:8081
+          - name: SURVEY_SERVICE_URL
+            value: http://mern-services:8082
+        ports:
+        - name: gateway-service
+          containerPort: 8080
+        - name: user-service
+          containerPort: 8081
+        - name: survey-service
+          containerPort: 8082
+        - name: react-app
+          containerPort: 3000
+        readinessProbe:
+          httpGet:
+            port: gateway-service
+            path: /health
+          # wait 10 sec before performing the 1st probe
+          initialDelaySeconds: 10
+          # probe timeout
+          timeoutSeconds: 5
+          # perform every 5 sec
+          periodSeconds: 5
+          # number of successful tries after which the probe is considered successful
+          successThreshold: 1
+          # number of failed tries after which the probe is considered failed
+          failureThreshold: 1
+        livenessProbe:
+          httpGet:
+            port: gateway-service
+            path: /health
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          # number of failed tries after which the probe is considered failed and the container will be restarted
+          failureThreshold: 10
+          

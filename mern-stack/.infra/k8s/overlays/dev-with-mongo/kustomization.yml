@@ -1,0 +1,31 @@
+generatorOptions:
+  disableNameSuffixHash: true
+
+bases:
+  - ../../components/services/overlays/dev
+  - ../../components/mongo/overlays/dev
+
+namespace: mern-stack-dev
+
+commonLabels:
+  environment: dev
+  team: jumpstart
+
+resources:
+  - namespace.yml
+
+secretGenerator:
+  # mongo admin user
+  - name: mongo-secret
+    env: "./.tmp/mongo-secret.env"
+  - name: gateway-service-secret
+    env: "./.tmp/gateway-service-secret.env"
+  - name: user-service-secret
+    env: "./.tmp/user-service-secret.env"
+  - name: survey-service-secret
+    env: "./.tmp/survey-service-secret.env"
+
+images:
+  - name: mern-services-image
+    newName: 782259420937.dkr.ecr.us-east-1.amazonaws.com/jumpstart/novus
+    newTag: latest

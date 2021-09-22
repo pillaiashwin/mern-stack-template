@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mern-services
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - name: mern-services
+        resources:
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        env:
+          - name: CORS_ORIGINS
+            value: http://dev.mern.jumpstart.hackathon.nsawssnd.massmutual.com,http://dev.gateway.mern.jumpstart.hackathon.nsawssnd.massmutual.com
+          - name: REACT_APP_GATEWAY_SERVICE_URL
+            value: http://dev.gateway.mern.jumpstart.hackathon.nsawssnd.massmutual.com

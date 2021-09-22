@@ -1,0 +1,20 @@
+@startuml dev-ci-sequence
+
+title CI Flow
+
+skinparam style strictuml
+
+actor           "Developer"     as dev
+participant     "GitHub"        as github
+participant     "NPM Registry"  as npm
+
+== build job ==
+
+dev -> github       : create PR
+github -> github    : checkout
+github -> npm       : fetch dependencies
+npm --> github      : ok
+github -> github    : build
+github -> github    : test
+
+@enduml

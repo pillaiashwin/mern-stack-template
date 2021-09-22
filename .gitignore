@@ -1,0 +1,14 @@
+.DS_Store
+.vscode/settings.json
+
+#*.js
+!**/mongo-init/*.js
+!jest.config.js
+*.d.ts
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+**/.tmp
