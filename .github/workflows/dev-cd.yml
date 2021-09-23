@@ -8,8 +8,9 @@ env:
   # overlay
   KUSTOMIZE_OVERLAY: dev
   # image
-  ECR_REPOSITORY: jumpstart
-  IMAGE_NAME: novus
+  ECR_REPOSITORY_PREFIX: hackathon
+  ECR_REPOSITORY: hackathon
+  IMAGE_NAME: maroonteam
   # aws
   AWS_REGION: us-east-1
   EKS_CLUSTER_NAME: ea-devops-eks

@@ -15,6 +15,11 @@ const config = {
       targetUrl: process.env.USER_SERVICE_URL || 'http://local.mernstack.com:8081',
       jwtSecret: process.env.USER_SERVICE_JWT_SECRET || 'secret',
     },
+    {
+      url: '/v1/integration',
+      targetUrl: process.env.INTEGRATION_SERVICE_URL || 'https://swapi.dev/api/people',
+      jwtSecret: process.env.INTEGRATION_SERVICE_JWT_SECRET || 'secret',
+    }
   ]
 };
 

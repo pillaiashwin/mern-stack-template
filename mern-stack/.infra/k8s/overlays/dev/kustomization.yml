@@ -4,11 +4,11 @@ generatorOptions:
 bases:
   - ../../components/services/overlays/dev
 
-namespace: mern-stack-dev
+namespace: maroonteam-dev
 
 commonLabels:
   environment: dev
-  team: jumpstart
+  team: maroon
 
 resources:
   - namespace.yml
@@ -23,5 +23,5 @@ secretGenerator:
 
 images:
   - name: mern-services-image
-    newName: 782259420937.dkr.ecr.us-east-1.amazonaws.com/jumpstart/novus
+    newName: 782259420937.dkr.ecr.us-east-1.amazonaws.com/hackathon/maroonteam
     newTag: latest

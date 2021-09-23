@@ -12,3 +12,9 @@ node_modules
 cdk.out
 
 **/.tmp
+
+# package dependency files
+mern-stack/gateway-service/package-lock.json
+mern-stack/react-app/package-lock.json
+mern-stack/survey-service/package-lock.json
+mern-stack/user-service/package-lock.json

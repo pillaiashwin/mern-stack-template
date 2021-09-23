@@ -25,6 +25,7 @@ export const reverseProxyMiddleware = (options: ReverseProxyOptions = {}): Route
 
     if (!isEmpty(req.body)) {
       requestOptions.body = JSON.stringify(req.body);
+      console.log("requestOptions['body']: ", JSON.stringify(req.body));
     }
 
     const sessionCookies = sessionService.getSessionTokensFromCookie(req.cookies.session);
@@ -55,6 +56,7 @@ export const reverseProxyMiddleware = (options: ReverseProxyOptions = {}): Route
         const responseJson = await response.json();
 
         res.status(response.status).json(responseJson);
+        console.log("responseJson: ", JSON.stringify(responseJson));
       } else {
         res.status(response.status).end();
       }

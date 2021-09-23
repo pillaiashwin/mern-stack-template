@@ -14,6 +14,6 @@ spec:
             cpu: "2"
         env:
           - name: CORS_ORIGINS
-            value: http://dev.mern.jumpstart.hackathon.nsawssnd.massmutual.com,http://dev.gateway.mern.jumpstart.hackathon.nsawssnd.massmutual.com
+            value: http://dev.mern.maroon.hackathon.nsawssnd.massmutual.com,http://dev.gateway.mern.maroon.hackathon.nsawssnd.massmutual.com
           - name: REACT_APP_GATEWAY_SERVICE_URL
-            value: http://dev.gateway.mern.jumpstart.hackathon.nsawssnd.massmutual.com
+            value: http://dev.gateway.mern.maroon.hackathon.nsawssnd.massmutual.com
